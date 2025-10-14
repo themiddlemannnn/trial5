@@ -94,7 +94,7 @@ function canSeeBillboard() {
     return true;
 }
 
-// --- NEW: Focus Button Listener ---
+// --- FOCUS BUTTON LISTENER ---
 document.getElementById('focusBillboardButton').addEventListener('click', () => {
     if (!isBillboardFocused && canSeeBillboard()) {
         enterBillboardFocusMode();
@@ -109,7 +109,6 @@ function enterBillboardFocusMode() {
     // Hide all UI
     document.getElementById('ui').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'none';
-    document.getElementById('controls').style.display = 'none';
     document.getElementById('systemLog').style.display = 'none';
     document.getElementById('settingsIcon').style.display = 'none';
     document.getElementById('settingsPanel').style.display = 'none';
@@ -136,7 +135,6 @@ function exitBillboardFocusMode() {
     // Show all UI
     document.getElementById('ui').style.display = 'block';
     document.getElementById('chatContainer').style.display = 'flex';
-    document.getElementById('controls').style.display = window.innerWidth > 768 ? 'block' : 'none';
     document.getElementById('systemLog').style.display = 'block';
     document.getElementById('settingsIcon').style.display = 'flex';
     document.getElementById('settingsPanel').style.display = 'none';
@@ -152,6 +150,63 @@ function exitBillboardFocusMode() {
 }
 
 document.getElementById('exitFocusButton').addEventListener('click', exitBillboardFocusMode);
+
+// --- HOW TO PLAY MODAL ---
+let howToPlayModal = null;
+document.getElementById('howToPlayButton').addEventListener('click', () => {
+    if (howToPlayModal) return;
+
+    howToPlayModal = document.createElement('div');
+    Object.assign(howToPlayModal.style, {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: 'rgba(0, 0, 0, 0.9)',
+        color: 'white',
+        padding: '20px',
+        borderRadius: '12px',
+        maxWidth: '400px',
+        width: '90%',
+        zIndex: '1000',
+        textAlign: 'left',
+        fontSize: '14px',
+        border: '2px solid rgba(255,255,255,0.3)'
+    });
+
+    howToPlayModal.innerHTML = `
+        <h3 style="margin-top:0; text-align:center;">How to Play</h3>
+        <div><strong>Movement:</strong> WASD or Arrow Keys</div>
+        <div><strong>Jump:</strong> Spacebar</div>
+        <div><strong>Sprint:</strong> Hold Shift</div>
+        <div><strong>Camera:</strong> Left-click + drag to rotate</div>
+        <div><strong>Zoom:</strong> Mouse wheel</div>
+        <div style="margin-top:15px; text-align:center;">
+            <button id="closeHowToPlay" style="
+                background: rgba(0,120,255,0.9);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+            ">Close</button>
+        </div>
+    `;
+
+    document.body.appendChild(howToPlayModal);
+
+    document.getElementById('closeHowToPlay').addEventListener('click', () => {
+        document.body.removeChild(howToPlayModal);
+        howToPlayModal = null;
+    });
+
+    howToPlayModal.addEventListener('click', (e) => {
+        if (e.target === howToPlayModal) {
+            document.body.removeChild(howToPlayModal);
+            howToPlayModal = null;
+        }
+    });
+});
 
 // --- UI EVENT LISTENERS ---
 document.getElementById('settingsIcon').addEventListener('click', () => {
@@ -241,12 +296,14 @@ function animate() {
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
 
+    // ✅ ALWAYS update physics and AI — even in focus mode
+    player.update(deltaTime, controls, camera);
+    updateAIPlayers(deltaTime, aiPlayers);
+    handleCollisions(player, aiPlayers);
+
+    // Only camera and UI depend on focus mode
     if (!isBillboardFocused) {
-        player.update(deltaTime, controls, camera);
-        updateAIPlayers(deltaTime, aiPlayers);
-        handleCollisions(player, aiPlayers);
         updateCamera();
-        // Position display removed per request
     } else {
         updateFocusCamera();
     }
