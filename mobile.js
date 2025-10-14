@@ -12,19 +12,32 @@ function isMobileDevice() {
  * Requests to enter fullscreen and lock the screen orientation to landscape.
  * This improves immersion and ensures controls are laid out correctly.
  */
-export async function enterMobileMode() {
+async function enterMobileMode() {
     const elem = document.documentElement;
     try {
-        // Request fullscreen
+        // Request fullscreen with multiple fallbacks for better compatibility
         if (elem.requestFullscreen) {
             await elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { /* Safari */
+        } else if (elem.webkitRequestFullscreen) { /* Safari/iOS */
             await elem.webkitRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) { /* Firefox */
+            await elem.mozRequestFullScreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            await elem.msRequestFullscreen();
         }
 
         // Lock screen to landscape. This is the modern, preferred API.
         if (screen.orientation && screen.orientation.lock) {
-            await screen.orientation.lock('landscape');
+            try {
+                await screen.orientation.lock('landscape');
+            } catch (orientErr) {
+                // Try alternative landscape mode if primary fails
+                try {
+                    await screen.orientation.lock('landscape-primary');
+                } catch (e) {
+                    console.warn('Could not lock to landscape-primary:', e.message);
+                }
+            }
         }
     } catch (err) {
         console.warn(`Could not lock orientation or enter fullscreen: ${err.message}`);
@@ -32,6 +45,9 @@ export async function enterMobileMode() {
         const log = document.getElementById('systemLog');
         if (log) {
             log.textContent = "For the best experience, please rotate your device to landscape.";
+            setTimeout(() => {
+                log.textContent = "";
+            }, 4000);
         }
     }
 }
@@ -70,13 +86,22 @@ export function setupMobileExperience() {
         background: 'rgba(0, 120, 255, 0.9)',
         border: '2px solid white',
         borderRadius: '10px',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+        touchAction: 'manipulation'
     });
     document.body.appendChild(startButton);
 
+    // Prevent double-tap zoom on the button
+    startButton.addEventListener('touchend', (e) => {
+        e.preventDefault();
+    });
+
     // When the user taps the button, start the mobile experience
-    startButton.addEventListener('click', () => {
-        enterMobileMode();
+    startButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await enterMobileMode();
         startButton.remove();
     }, { once: true });
 }
