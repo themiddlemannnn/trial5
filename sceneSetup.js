@@ -2,7 +2,7 @@
  * Sets up the static scene elements like floor, walls, lighting, and billboard.
  * @param {THREE.Scene} scene The main Three.js scene object.
  * @param {THREE.AudioListener} audioListener The listener for positional audio.
- * @returns {{collidableObjects: THREE.Mesh[], videoElement: HTMLVideoElement, billboardAudio: THREE.PositionalAudio, billboardFrame: THREE.Mesh}} An object containing scene objects, the video element, the audio source, and the billboard frame.
+ * @returns {{collidableObjects: THREE.Mesh[], videoElement: HTMLVideoElement, billboardAudio: THREE.PositionalAudio, billboardFrame: THREE.Mesh, billboardDisplay: THREE.Mesh}} An object containing scene objects, the video element, the audio source, the billboard frame, and the billboard display screen.
  */
 export function setupScene(scene, audioListener) {
     const collidableObjects = [];
@@ -54,7 +54,6 @@ export function setupScene(scene, audioListener) {
     walls[1].position.set(0, hallHeight / 2, hallDepth / 2);
     walls[2].position.set(-hallWidth / 2, hallHeight / 2, 0);
     walls[3].position.set(hallWidth / 2, hallHeight / 2, 0);
-    
     walls.forEach(wall => {
         wall.receiveShadow = true;
         scene.add(wall);
@@ -74,13 +73,13 @@ export function setupScene(scene, audioListener) {
     billboardFrame.castShadow = true;
     scene.add(billboardFrame);
     collidableObjects.push(billboardFrame);
-
+    
     // Billboard screen with video
     const videoElement = document.createElement('video');
     videoElement.src = 'trial.mp4';
     videoElement.loop = true;
     videoElement.muted = true; // Required for autoplay in most browsers
-    videoElement.playsInline = true; // Important for iOS
+    videoElement.playsInline = true;
     videoElement.crossOrigin = 'anonymous';
     // videoElement.play(); // Playback will be started by user interaction
 
@@ -117,5 +116,5 @@ export function setupScene(scene, audioListener) {
     scene.add(rightPole);
     collidableObjects.push(rightPole);
 
-    return { collidableObjects, videoElement, billboardAudio, billboardFrame };
+    return { collidableObjects, videoElement, billboardAudio, billboardFrame, billboardDisplay: display };
 }
