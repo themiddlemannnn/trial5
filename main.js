@@ -20,46 +20,59 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const audioListener = new THREE.AudioListener();
 camera.add(audioListener);
 
-// --- CORRECTED MOBILE DETECTION ---
-const isMobile = (() => {
-    // This logic is now stricter to avoid flagging touch-screen laptops.
-    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-    return mobileRegex.test(navigator.userAgent);
-})();
-
-// Camera setup
+// Global state variables
+let isMobile;
+let controls;
 let cameraMode = 'auto';
 let targetCameraAngle = { theta: Math.PI, phi: Math.PI / 2.8 };
 let currentCameraAngle = { ...targetCameraAngle };
-let cameraDistance = isMobile ? 8 : 25;
+let cameraDistance;
 
 const raycaster = new THREE.Raycaster();
-// Billboard focus mode state
 let isBillboardFocused = false;
 let focusCameraPosition = new THREE.Vector3();
 let focusCameraTarget = new THREE.Vector3();
-let originalCameraDistance = cameraDistance;
+let originalCameraDistance;
 
-// --- SCENE SETUP ---
+// --- SCENE & PLAYER SETUP ---
 const { collidableObjects, videoElement, billboardAudio, billboardFrame } = setupScene(scene, audioListener);
-// --- PLAYER AND AI SETUP ---
 const player = new Player(scene, new THREE.Vector3(0, 1.2, 25));
 const aiPlayers = createAIPlayers(scene);
-// --- CONTROLS ---
-const controls = isMobile ? setupMobileControls(renderer.domElement) : setupControls(renderer.domElement);
 
-if (isMobile) {
-    setupMobileExperience(videoElement, billboardAudio);
-} else {
-    document.getElementById('mobileControls').style.display = 'none';
-    document.getElementById('exitFocusButton').style.display = 'none';
-    const startMedia = () => {
-        if (videoElement.paused) videoElement.play().catch(e => console.error("Video play failed:", e));
-        if (billboardAudio && !billboardAudio.isPlaying) billboardAudio.play();
-        window.removeEventListener('click', startMedia);
-    };
-    window.addEventListener('click', startMedia);
+// --- NEW: Device Selection Logic ---
+const deviceSelectionModal = document.getElementById('deviceSelectionModal');
+document.getElementById('desktopButton').addEventListener('click', () => initializeExperience(false));
+document.getElementById('mobileButton').addEventListener('click', () => initializeExperience(true));
+
+function initializeExperience(isMobileDevice) {
+    isMobile = isMobileDevice;
+    deviceSelectionModal.style.display = 'none';
+
+    // Set camera distance based on device
+    cameraDistance = isMobile ? 12 : 25;
+
+    // Setup controls based on device
+    controls = isMobile ? setupMobileControls(renderer.domElement) : setupControls(renderer.domElement);
+
+    if (isMobile) {
+        setupMobileExperience(videoElement, billboardAudio);
+    } else {
+        // Hide mobile-specific UI on desktop
+        document.getElementById('mobileControls').style.display = 'none';
+        document.getElementById('exitFocusButton').style.display = 'none';
+        // Media playback on desktop requires a single click anywhere to start
+        const startMedia = () => {
+            if (videoElement.paused) videoElement.play().catch(e => console.error("Video play failed:", e));
+            if (billboardAudio && !billboardAudio.isPlaying) billboardAudio.play();
+            window.removeEventListener('click', startMedia);
+        };
+        window.addEventListener('click', startMedia);
+    }
+
+    // Start the animation loop
+    animate();
 }
+
 
 // --- Can player see the billboard? ---
 function canSeeBillboard() {
@@ -107,7 +120,7 @@ function enterBillboardFocusMode() {
     document.getElementById('systemLog').style.display = 'none';
     document.getElementById('settingsIcon').style.display = 'none';
     document.getElementById('settingsPanel').style.display = 'none';
-    document.getElementById('mobileControls').style.display = isMobile ? 'none' : 'none';
+    document.getElementById('mobileControls').style.display = 'none';
     // Show exit button
     document.getElementById('exitFocusButton').style.display = 'block';
     // Audio
@@ -130,7 +143,9 @@ function exitBillboardFocusMode() {
     document.getElementById('systemLog').style.display = 'block';
     document.getElementById('settingsIcon').style.display = 'flex';
     document.getElementById('settingsPanel').style.display = 'none';
-    document.getElementById('mobileControls').style.display = isMobile ? 'block' : 'none';
+    if (isMobile) {
+        document.getElementById('mobileControls').style.display = 'block';
+    }
     // Hide exit button
     document.getElementById('exitFocusButton').style.display = 'none';
     // Reset audio
@@ -242,13 +257,10 @@ function animate() {
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
 
-    // --- UPDATED LOGIC ---
-    // AI and collisions are now updated regardless of focus mode.
     updateAIPlayers(deltaTime, aiPlayers);
     handleCollisions(player, aiPlayers);
 
     if (!isBillboardFocused) {
-        // Player movement and camera only update when not focused.
         player.update(deltaTime, controls, camera);
         updateCamera();
     } else {
@@ -318,4 +330,3 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-animate();
