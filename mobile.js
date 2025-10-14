@@ -12,7 +12,7 @@ function isMobileDevice() {
  * Requests to enter fullscreen and lock the screen orientation to landscape.
  * This improves immersion and ensures controls are laid out correctly.
  */
-async function enterMobileMode() {
+export async function enterMobileMode() {
     const elem = document.documentElement;
     try {
         // Request fullscreen
