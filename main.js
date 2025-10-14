@@ -27,7 +27,7 @@ const isMobile = (() => {
     const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
     return (hasTouch && mobileRegex.test(navigator.userAgent)) || (hasTouch && window.innerWidth <= 768);
-})();
+})(); // <-- **FIXED: Added the missing closing parenthesis here**
 
 // Camera setup – closer by default on mobile
 let cameraMode = 'auto';
