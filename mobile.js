@@ -39,8 +39,10 @@ async function enterMobileMode() {
 /**
  * Initializes all mobile-specific UI and event listeners.
  * It only runs on devices identified as mobile.
+ * @param {HTMLVideoElement} videoElement The billboard video element to play.
+ * @param {THREE.PositionalAudio} billboardAudio The billboard audio to play.
  */
-export function setupMobileExperience() {
+export function setupMobileExperience(videoElement, billboardAudio) {
     if (!isMobileDevice()) {
         return; // Exit if not on a mobile device
     }
@@ -77,6 +79,15 @@ export function setupMobileExperience() {
     // When the user taps the button, start the mobile experience
     startButton.addEventListener('click', () => {
         enterMobileMode();
+        
+        // --- Start Media Playback on User Interaction ---
+        if (videoElement.paused) {
+            videoElement.play().catch(e => console.error("Video play failed:", e));
+        }
+        if (billboardAudio && !billboardAudio.isPlaying) {
+            billboardAudio.play();
+        }
+        
         startButton.remove();
     }, { once: true });
 }
