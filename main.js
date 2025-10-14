@@ -129,14 +129,14 @@ function enterBillboardFocusMode() {
     document.getElementById('systemLog').style.display = 'none';
     document.getElementById('settingsIcon').style.display = 'none';
     document.getElementById('settingsPanel').style.display = 'none';
-    
+
     // Show exit button
     document.getElementById('exitFocusButton').style.display = 'block';
     // Increase audio volume
     if (billboardAudio) {
         billboardAudio.setVolume(1.0);
     }
-    
+
     // Calculate focus camera position (zoomed in on billboard)
     const billboardPosition = billboardFrame.position.clone();
     focusCameraTarget.copy(billboardPosition);
@@ -152,7 +152,7 @@ function exitBillboardFocusMode() {
     document.getElementById('mobileControls').style.display = 'block';
     document.getElementById('systemLog').style.display = 'block';
     document.getElementById('settingsIcon').style.display = 'flex';
-    
+
     // Hide exit button
     document.getElementById('exitFocusButton').style.display = 'none';
     // Reset audio volume
@@ -228,7 +228,7 @@ document.getElementById('chatInput').addEventListener('keydown', (e) => {
             input.value = '';
             input.blur();
         }
-   
+
     }
 });
 
