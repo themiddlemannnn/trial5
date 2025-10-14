@@ -7,48 +7,36 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- UI Overlay -->
+  <!-- UI elements will be added by JS or kept minimal -->
   <div id="ui">
     <div>FPS: <span id="fpsCounter">0</span></div>
     <button id="focusBillboardButton">Focus Billboard</button>
   </div>
 
-  <!-- Settings Icon -->
-  <div id="settingsIcon">⚙️</div>
+  <div id="controls">
+    <div class="control-item"><strong>Movement:</strong> WASD or Arrow Keys</div>
+    <div class="control-item"><strong>Jump:</strong> Spacebar</div>
+    <div class="control-item"><strong>Speed:</strong> Hold Shift</div>
+    <div class="control-item"><strong>Camera:</strong> Left-click + Drag to rotate</div>
+    <div class="control-item"><strong>Zoom:</strong> Mouse Wheel</div>
+  </div>
 
-  <!-- Full-Screen Settings Panel -->
+  <div id="settingsIcon">⚙️</div>
   <div id="settingsPanel">
-    <h2>Settings</h2>
     <button id="cameraToggle">Toggle Camera: <span id="modeText">Auto Follow</span></button>
     <button id="zoomInButton">Zoom In</button>
     <button id="zoomOutButton">Zoom Out</button>
     <button id="muteButton">Mute Audio</button>
     <button id="fullscreenButton">Toggle Fullscreen</button>
-    <button id="howToPlayButton">How to Play</button>
-
-    <!-- How to Play Instructions (Initially Hidden) -->
-    <div id="howToPlayContent" style="display: none; margin-top: 20px; color: #ccc; line-height: 1.6;">
-      <h3>Controls</h3>
-      <p><strong>Movement:</strong> WASD or Arrow Keys<br>
-      <strong>Jump:</strong> Spacebar<br>
-      <strong>Speed:</strong> Hold Shift<br>
-      <strong>Camera:</strong> Left-click + Drag to rotate<br>
-      <strong>Zoom:</strong> Mouse Wheel</p>
-    </div>
-
-    <button id="closeSettingsButton" style="background: #ff4444;">Close Settings</button>
   </div>
 
-  <!-- Chat UI -->
   <div id="chatContainer">
     <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" />
     <button id="sendButton">Send</button>
   </div>
 
-  <!-- System Log -->
   <div id="systemLog"></div>
 
-  <!-- Mobile Controls -->
   <div id="mobileControls">
     <div id="joystickArea">
       <div id="joystickBase"></div>
@@ -58,10 +46,19 @@
     <div id="sprintButton">SPRINT</div>
   </div>
 
-  <!-- Exit Focus Button -->
   <button id="exitFocusButton">Exit Focus Mode</button>
 
-  <!-- Scripts -->
+  <!-- Load Three.js from CDN -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.1/examples/jsm/"
+      }
+    }
+  </script>
+
+  <!-- Your main script (as a module) -->
   <script type="module" src="main.js"></script>
 </body>
 </html>
