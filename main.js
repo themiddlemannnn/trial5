@@ -19,6 +19,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
+const audioListener = new THREE.AudioListener();
+camera.add(audioListener);
 
 // Mobile detection
 const isMobile = (() => {
@@ -36,7 +38,7 @@ let cameraDistance = isMobile ? 8 : 25; // More zoomed-in on mobile
 const raycaster = new THREE.Raycaster();
 
 // --- SCENE SETUP ---
-const { collidableObjects } = setupScene(scene);
+const { collidableObjects, videoElement, billboardAudio } = setupScene(scene, audioListener);
 
 // --- PLAYER AND AI SETUP ---
 const player = new Player(scene, new THREE.Vector3(0, 1.2, 25));
@@ -46,9 +48,20 @@ const aiPlayers = createAIPlayers(scene);
 const controls = isMobile ? setupMobileControls(renderer.domElement) : setupControls(renderer.domElement);
 
 if (isMobile) {
-    setupMobileExperience(); // Initialize mobile-specific features
+    setupMobileExperience(videoElement, billboardAudio); // Initialize mobile-specific features
 } else {
     document.getElementById('mobileControls').style.display = 'none';
+    // For desktop, start media on the first click
+    const startMedia = () => {
+        if (videoElement.paused) {
+            videoElement.play().catch(e => console.error("Video play failed:", e));
+        }
+        if (billboardAudio && !billboardAudio.isPlaying) {
+            billboardAudio.play();
+        }
+        window.removeEventListener('click', startMedia);
+    };
+    window.addEventListener('click', startMedia);
 }
 
 
@@ -72,6 +85,18 @@ document.getElementById('zoomInButton').addEventListener('click', () => {
 });
 document.getElementById('zoomOutButton').addEventListener('click', () => {
     cameraDistance = Math.min(50, cameraDistance + 3);
+});
+
+// Mute button
+document.getElementById('muteButton').addEventListener('click', () => {
+    const button = document.getElementById('muteButton');
+    if (billboardAudio.isPlaying) {
+        billboardAudio.pause();
+        button.textContent = 'Unmute Audio';
+    } else {
+        billboardAudio.play();
+        button.textContent = 'Mute Audio';
+    }
 });
 
 // Fullscreen toggle
