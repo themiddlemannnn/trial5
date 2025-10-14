@@ -51,16 +51,15 @@ const player = new Player(scene, new THREE.Vector3(0, 1.2, 25));
 const aiPlayers = createAIPlayers(scene);
 
 // --- CONTROLS ---
-let controls;
+const controls = isMobile ? setupMobileControls(renderer.domElement) : setupControls(renderer.domElement);
+
 if (isMobile) {
-    // For mobile, pass camera and targets into the unified controls setup
-    const tapTargets = [billboardFrame, billboardDisplay];
-    controls = setupMobileControls(renderer.domElement, camera, tapTargets, enterBillboardFocusMode);
     setupMobileExperience(videoElement, billboardAudio);
+    // Initialize mobile-specific features
+    setupBillboardTapDetection(); // Add billboard tap detection for mobile
 } else {
-    controls = setupControls(renderer.domElement);
     document.getElementById('mobileControls').style.display = 'none';
-    document.getElementById('exitFocusButton').style.display = 'none';
+    document.getElementById('exitFocusButton').style.display = 'none'; // Hide exit button on desktop
     // For desktop, start media on the first click
     const startMedia = () => {
         if (videoElement.paused) {
@@ -75,9 +74,27 @@ if (isMobile) {
 }
 
 
-// --- BILLBOARD FOCUS MODE LOGIC ---
+// --- BILLBOARD FOCUS MODE (MOBILE ONLY) ---
+function setupBillboardTapDetection() {
+    renderer.domElement.addEventListener('touchstart', (e) => {
+        if (isBillboardFocused) return; // Already in focus mode
+        
+        const touch = e.touches[0];
+        const mouse = new THREE.Vector2(
+            (touch.clientX / window.innerWidth) * 2 - 1,
+            -(touch.clientY / window.innerHeight) * 2 + 1
+        );
+        
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects([billboardFrame, billboardDisplay], true);
+        
+        if (intersects.length > 0) {
+            enterBillboardFocusMode();
+        }
+    });
+}
+
 function enterBillboardFocusMode() {
-    if (isBillboardFocused) return; // Prevent re-triggering
     isBillboardFocused = true;
     originalCameraDistance = cameraDistance;
     // Hide all UI elements
@@ -124,6 +141,7 @@ document.getElementById('exitFocusButton').addEventListener('click', exitBillboa
 
 
 // --- UI EVENT LISTENERS ---
+
 // Settings panel toggle
 document.getElementById('settingsIcon').addEventListener('click', () => {
     const panel = document.getElementById('settingsPanel');
