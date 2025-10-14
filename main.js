@@ -44,7 +44,7 @@ let focusCameraTarget = new THREE.Vector3();
 let originalCameraDistance = cameraDistance;
 
 // --- SCENE SETUP ---
-const { collidableObjects, videoElement, billboardAudio, billboardFrame } = setupScene(scene, audioListener);
+const { collidableObjects, videoElement, billboardAudio, billboardFrame, billboardDisplay } = setupScene(scene, audioListener);
 
 // --- PLAYER AND AI SETUP ---
 const player = new Player(scene, new THREE.Vector3(0, 1.2, 25));
@@ -86,7 +86,7 @@ function setupBillboardTapDetection() {
         );
         
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObject(billboardFrame, true);
+        const intersects = raycaster.intersectObjects([billboardFrame, billboardDisplay], true);
         
         if (intersects.length > 0) {
             enterBillboardFocusMode();
