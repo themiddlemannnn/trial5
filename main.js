@@ -10,6 +10,7 @@ import { setupMobileExperience } from './mobile.js';
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a1a);
 scene.fog = new THREE.Fog(0x1a1a1a, 60, 100);
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -32,7 +33,6 @@ let cameraMode = 'auto';
 let targetCameraAngle = { theta: Math.PI, phi: Math.PI / 2.8 };
 let currentCameraAngle = { ...targetCameraAngle };
 let cameraDistance = isMobile ? 8 : 25;
-
 const raycaster = new THREE.Raycaster();
 
 // Billboard focus mode state
@@ -68,21 +68,16 @@ if (isMobile) {
 function canSeeBillboard() {
     const playerPos = player.ball.position.clone();
     const billboardPos = billboardFrame.position.clone();
-
     const toBillboard = new THREE.Vector3().subVectors(billboardPos, playerPos);
     toBillboard.y = 0;
     if (toBillboard.lengthSq() === 0) return false;
-
     if (toBillboard.length() > 40) return false;
-
     const cameraForward = new THREE.Vector3();
     camera.getWorldDirection(cameraForward);
     cameraForward.y = 0;
     cameraForward.normalize();
-
     const angle = cameraForward.angleTo(toBillboard.normalize());
     if (angle > Math.PI / 2) return false;
-
     raycaster.set(playerPos, toBillboard.clone().normalize());
     raycaster.far = toBillboard.length();
     const intersects = raycaster.intersectObjects(collidableObjects);
@@ -105,24 +100,18 @@ document.getElementById('focusBillboardButton').addEventListener('click', () => 
 function enterBillboardFocusMode() {
     isBillboardFocused = true;
     originalCameraDistance = cameraDistance;
-
     // Hide all UI
     document.getElementById('ui').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'none';
-    document.getElementById('controls').style.display = 'none';
     document.getElementById('systemLog').style.display = 'none';
     document.getElementById('settingsIcon').style.display = 'none';
-    document.getElementById('settingsPanel').style.display = 'none';
     document.getElementById('mobileControls').style.display = isMobile ? 'none' : 'none';
-
     // Show exit button
     document.getElementById('exitFocusButton').style.display = 'block';
-
     // Audio
     if (billboardAudio) {
         billboardAudio.setVolume(1.0);
     }
-
     // Camera target
     const billboardPosition = billboardFrame.position.clone();
     focusCameraTarget.copy(billboardPosition);
@@ -132,31 +121,36 @@ function enterBillboardFocusMode() {
 function exitBillboardFocusMode() {
     isBillboardFocused = false;
     cameraDistance = originalCameraDistance;
-
     // Show all UI
     document.getElementById('ui').style.display = 'block';
     document.getElementById('chatContainer').style.display = 'flex';
-    document.getElementById('controls').style.display = window.innerWidth > 768 ? 'block' : 'none';
     document.getElementById('systemLog').style.display = 'block';
     document.getElementById('settingsIcon').style.display = 'flex';
-    document.getElementById('settingsPanel').style.display = 'none';
     document.getElementById('mobileControls').style.display = isMobile ? 'block' : 'none';
-
     // Hide exit button
     document.getElementById('exitFocusButton').style.display = 'none';
-
     // Reset audio
     if (billboardAudio) {
         billboardAudio.setVolume(0.5);
     }
+    // Close settings if open
+    document.getElementById('settingsPanel').style.display = 'none';
 }
 
 document.getElementById('exitFocusButton').addEventListener('click', exitBillboardFocusMode);
 
 // --- UI EVENT LISTENERS ---
 document.getElementById('settingsIcon').addEventListener('click', () => {
-    const panel = document.getElementById('settingsPanel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('settingsPanel').style.display = 'block';
+});
+
+document.getElementById('closeSettingsButton').addEventListener('click', () => {
+    document.getElementById('settingsPanel').style.display = 'none';
+});
+
+document.getElementById('howToPlayButton').addEventListener('click', () => {
+    const content = document.getElementById('howToPlayContent');
+    content.style.display = content.style.display === 'none' ? 'block' : 'none';
 });
 
 document.getElementById('cameraToggle').addEventListener('click', () => {
@@ -167,6 +161,7 @@ document.getElementById('cameraToggle').addEventListener('click', () => {
 document.getElementById('zoomInButton').addEventListener('click', () => {
     cameraDistance = Math.max(8, cameraDistance - 3);
 });
+
 document.getElementById('zoomOutButton').addEventListener('click', () => {
     cameraDistance = Math.min(50, cameraDistance + 3);
 });
@@ -183,6 +178,7 @@ document.getElementById('muteButton').addEventListener('click', () => {
 });
 
 document.getElementById('fullscreenButton').addEventListener('click', toggleFullScreen);
+
 function toggleFullScreen() {
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         const elem = document.documentElement;
@@ -209,6 +205,7 @@ document.getElementById('chatInput').addEventListener('keydown', (e) => {
         }
     }
 });
+
 document.getElementById('sendButton').addEventListener('click', () => {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
@@ -241,12 +238,13 @@ function animate() {
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
 
+    // ✅ FIX: Always update AI players, even in focus mode
+    updateAIPlayers(deltaTime, aiPlayers);
+
     if (!isBillboardFocused) {
         player.update(deltaTime, controls, camera);
-        updateAIPlayers(deltaTime, aiPlayers);
         handleCollisions(player, aiPlayers);
         updateCamera();
-        // Position display removed per request
     } else {
         updateFocusCamera();
     }
@@ -274,11 +272,9 @@ function updateCamera() {
     cameraDistance += controls.scrollDelta * 0.03;
     cameraDistance = Math.max(8, Math.min(50, cameraDistance));
     controls.scrollDelta = 0;
-
     const lerpFactor = 0.08;
     currentCameraAngle.theta += (targetCameraAngle.theta - currentCameraAngle.theta) * lerpFactor;
     currentCameraAngle.phi += (targetCameraAngle.phi - currentCameraAngle.phi) * lerpFactor;
-
     const playerHead = new THREE.Vector3(
         player.ball.position.x,
         player.ball.position.y + 2,
@@ -290,7 +286,6 @@ function updateCamera() {
         currentCameraAngle.theta
     );
     const idealCamPos = playerHead.clone().add(idealCamOffset);
-
     const camDirection = new THREE.Vector3().subVectors(idealCamPos, playerHead).normalize();
     raycaster.set(playerHead, camDirection);
     raycaster.far = cameraDistance;
