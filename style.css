@@ -57,20 +57,6 @@ canvas {
 #ui button:hover {
     background: rgba(0, 100, 220, 0.9);
 }
-#controls {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    color: white;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    max-width: 250px;
-}
-.control-item {
-    margin: 3px 0;
-}
 #settingsIcon {
     position: absolute;
     top: 60px;
@@ -278,9 +264,6 @@ canvas {
     #ui {
         font-size: 10px;
         padding: 8px;
-    }
-    #controls {
-        display: none;
     }
     #chatInput {
         width: 100%;
