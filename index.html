@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+    <title>3D Ball Social Space</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- UI elements for displaying information -->
+    <div id="ui">
+        <div><strong>3D Ball Social Space</strong></div>
+        <div>Position: <span id="position">0, 0, 0</span></div>
+        <div>Players Online: <span id="playerCount">16</span></div>
+    </div>
+    <div id="systemLog"></div>
+
+    <!-- Settings Panel -->
+    <div id="settingsIcon">⚙️</div>
+    <div id="settingsPanel">
+        <div><strong>Camera Mode:</strong> <span id="modeText">Auto Follow</span></div>
+        <button id="cameraToggle">Toggle Camera</button>
+        <div style="margin-top: 10px;"><strong>Zoom:</strong></div>
+        <button id="zoomInButton">Zoom In</button>
+        <button id="zoomOutButton">Zoom Out</button>
+        <div style="margin-top: 10px;"><strong>Display:</strong></div>
+        <button id="fullscreenButton">Toggle Fullscreen</button>
+    </div>
+
+    <!-- Desktop Controls Help Text -->
+    <div id="controls">
+        <div class="control-item"><strong>Movement:</strong> WASD or Arrow Keys</div>
+        <div class="control-item"><strong>Jump:</strong> Spacebar</div>
+        <div class="control-item"><strong>Speed:</strong> Hold Shift</div>
+        <div class="control-item"><strong>Camera:</strong> Left-click + Drag to rotate</div>
+        <div class="control-item"><strong>Zoom:</strong> Mouse Wheel</div>
+    </div>
+
+    <!-- Chat Input with Send Button -->
+    <div id="chatContainer">
+        <input type="text" id="chatInput" placeholder="Type a message..." maxlength="50">
+        <button id="sendButton">Send</button>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobileControls">
+        <div id="joystickArea">
+            <div id="joystickBase"></div>
+            <div id="joystickStick"></div>
+        </div>
+        <div id="jumpButton">JUMP</div>
+        <div id="sprintButton">SPRINT</div>
+        <!-- Zoom buttons REMOVED from here -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
