@@ -1,54 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
-    <title>3D Ball Social Space</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>3D Social Space</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div id="ui">
-        <div>Players Online: <span id="playerCount">16</span></div>
-        <button id="focusBillboardButton">Focus on Billboard</button>
+  <!-- UI Overlay -->
+  <div id="ui">
+    <div>FPS: <span id="fpsCounter">0</span></div>
+    <button id="focusBillboardButton">Focus Billboard</button>
+  </div>
+
+  <!-- Settings Icon -->
+  <div id="settingsIcon">⚙️</div>
+
+  <!-- Full-Screen Settings Panel -->
+  <div id="settingsPanel">
+    <h2>Settings</h2>
+    <button id="cameraToggle">Toggle Camera: <span id="modeText">Auto Follow</span></button>
+    <button id="zoomInButton">Zoom In</button>
+    <button id="zoomOutButton">Zoom Out</button>
+    <button id="muteButton">Mute Audio</button>
+    <button id="fullscreenButton">Toggle Fullscreen</button>
+    <button id="howToPlayButton">How to Play</button>
+
+    <!-- How to Play Instructions (Initially Hidden) -->
+    <div id="howToPlayContent" style="display: none; margin-top: 20px; color: #ccc; line-height: 1.6;">
+      <h3>Controls</h3>
+      <p><strong>Movement:</strong> WASD or Arrow Keys<br>
+      <strong>Jump:</strong> Spacebar<br>
+      <strong>Speed:</strong> Hold Shift<br>
+      <strong>Camera:</strong> Left-click + Drag to rotate<br>
+      <strong>Zoom:</strong> Mouse Wheel</p>
     </div>
-    <div id="systemLog"></div>
-    <div id="settingsIcon">⚙️</div>
-    <div id="settingsPanel">
-        <div><strong>Camera Mode:</strong> <span id="modeText">Auto Follow</span></div>
-        <button id="cameraToggle">Toggle Camera</button>
-        <div style="margin-top: 10px;"><strong>Zoom:</strong></div>
-        <button id="zoomInButton">Zoom In</button>
-        <button id="zoomOutButton">Zoom Out</button>
-        <div style="margin-top: 10px;"><strong>Audio:</strong></div>
-        <button id="muteButton">Mute Audio</button>
-        <div style="margin-top: 10px;"><strong>Display:</strong></div>
-        <button id="fullscreenButton">Toggle Fullscreen</button>
+
+    <button id="closeSettingsButton" style="background: #ff4444;">Close Settings</button>
+  </div>
+
+  <!-- Chat UI -->
+  <div id="chatContainer">
+    <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" />
+    <button id="sendButton">Send</button>
+  </div>
+
+  <!-- System Log -->
+  <div id="systemLog"></div>
+
+  <!-- Mobile Controls -->
+  <div id="mobileControls">
+    <div id="joystickArea">
+      <div id="joystickBase"></div>
+      <div id="joystickStick"></div>
     </div>
-    <div id="controls">
-        <div class="control-item"><strong>Movement:</strong> WASD or Arrow Keys</div>
-        <div class="control-item"><strong>Jump:</strong> Spacebar</div>
-        <div class="control-item"><strong>Speed:</strong> Hold Shift</div>
-        <div class="control-item"><strong>Camera:</strong> Left-click + Drag to rotate</div>
-        <div class="control-item"><strong>Zoom:</strong> Mouse Wheel</div>
-    </div>
-    <div id="chatContainer">
-        <input type="text" id="chatInput" placeholder="Type a message..." maxlength="50">
-        <button id="sendButton">Send</button>
-    </div>
-    <div id="mobileControls">
-        <div id="joystickArea">
-            <div id="joystickBase"></div>
-            <div id="joystickStick"></div>
-        </div>
-        <div id="jumpButton">JUMP</div>
-        <div id="sprintButton">SPRINT</div>
-    </div>
-    <div id="exitFocusButton">Exit</div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script type="module" src="main.js"></script>
+    <div id="jumpButton">JUMP</div>
+    <div id="sprintButton">SPRINT</div>
+  </div>
+
+  <!-- Exit Focus Button -->
+  <button id="exitFocusButton">Exit Focus Mode</button>
+
+  <!-- Scripts -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>
