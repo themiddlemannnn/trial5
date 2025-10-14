@@ -29,7 +29,7 @@ const isMobile = (() => {
     return (hasTouch && mobileRegex.test(navigator.userAgent)) || (hasTouch && window.innerWidth <= 768);
 })();
 
-// Camera setup — closer by default on mobile
+// Camera setup – closer by default on mobile
 let cameraMode = 'auto';
 let targetCameraAngle = { theta: Math.PI, phi: Math.PI / 2.8 };
 let currentCameraAngle = { ...targetCameraAngle };
@@ -37,8 +37,14 @@ let cameraDistance = isMobile ? 8 : 25; // More zoomed-in on mobile
 
 const raycaster = new THREE.Raycaster();
 
+// Billboard focus mode state
+let isBillboardFocused = false;
+let focusCameraPosition = new THREE.Vector3();
+let focusCameraTarget = new THREE.Vector3();
+let originalCameraDistance = cameraDistance;
+
 // --- SCENE SETUP ---
-const { collidableObjects, videoElement, billboardAudio } = setupScene(scene, audioListener);
+const { collidableObjects, videoElement, billboardAudio, billboardFrame } = setupScene(scene, audioListener);
 
 // --- PLAYER AND AI SETUP ---
 const player = new Player(scene, new THREE.Vector3(0, 1.2, 25));
@@ -49,8 +55,10 @@ const controls = isMobile ? setupMobileControls(renderer.domElement) : setupCont
 
 if (isMobile) {
     setupMobileExperience(videoElement, billboardAudio); // Initialize mobile-specific features
+    setupBillboardTapDetection(); // Add billboard tap detection for mobile
 } else {
     document.getElementById('mobileControls').style.display = 'none';
+    document.getElementById('exitFocusButton').style.display = 'none'; // Hide exit button on desktop
     // For desktop, start media on the first click
     const startMedia = () => {
         if (videoElement.paused) {
@@ -63,6 +71,76 @@ if (isMobile) {
     };
     window.addEventListener('click', startMedia);
 }
+
+
+// --- BILLBOARD FOCUS MODE (MOBILE ONLY) ---
+function setupBillboardTapDetection() {
+    renderer.domElement.addEventListener('touchstart', (e) => {
+        if (isBillboardFocused) return; // Already in focus mode
+        
+        const touch = e.touches[0];
+        const mouse = new THREE.Vector2(
+            (touch.clientX / window.innerWidth) * 2 - 1,
+            -(touch.clientY / window.innerHeight) * 2 + 1
+        );
+        
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(billboardFrame, true);
+        
+        if (intersects.length > 0) {
+            enterBillboardFocusMode();
+        }
+    });
+}
+
+function enterBillboardFocusMode() {
+    isBillboardFocused = true;
+    originalCameraDistance = cameraDistance;
+    
+    // Hide all UI elements
+    document.getElementById('ui').style.display = 'none';
+    document.getElementById('chatContainer').style.display = 'none';
+    document.getElementById('mobileControls').style.display = 'none';
+    document.getElementById('systemLog').style.display = 'none';
+    document.getElementById('settingsIcon').style.display = 'none';
+    document.getElementById('settingsPanel').style.display = 'none';
+    
+    // Show exit button
+    document.getElementById('exitFocusButton').style.display = 'block';
+    
+    // Increase audio volume
+    if (billboardAudio) {
+        billboardAudio.setVolume(1.0);
+    }
+    
+    // Calculate focus camera position (zoomed in on billboard)
+    const billboardPosition = billboardFrame.position.clone();
+    focusCameraTarget.copy(billboardPosition);
+    focusCameraPosition.set(billboardPosition.x, billboardPosition.y, billboardPosition.z + 15);
+}
+
+function exitBillboardFocusMode() {
+    isBillboardFocused = false;
+    cameraDistance = originalCameraDistance;
+    
+    // Show all UI elements
+    document.getElementById('ui').style.display = 'block';
+    document.getElementById('chatContainer').style.display = 'flex';
+    document.getElementById('mobileControls').style.display = 'block';
+    document.getElementById('systemLog').style.display = 'block';
+    document.getElementById('settingsIcon').style.display = 'flex';
+    
+    // Hide exit button
+    document.getElementById('exitFocusButton').style.display = 'none';
+    
+    // Reset audio volume
+    if (billboardAudio) {
+        billboardAudio.setVolume(0.5);
+    }
+}
+
+// Exit button listener
+document.getElementById('exitFocusButton').addEventListener('click', exitBillboardFocusMode);
 
 
 // --- UI EVENT LISTENERS ---
@@ -168,13 +246,17 @@ function animate() {
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
 
-    player.update(deltaTime, controls, camera);
-    updateAIPlayers(deltaTime, aiPlayers);
-    handleCollisions(player, aiPlayers);
-    updateCamera();
+    if (!isBillboardFocused) {
+        player.update(deltaTime, controls, camera);
+        updateAIPlayers(deltaTime, aiPlayers);
+        handleCollisions(player, aiPlayers);
+        updateCamera();
 
-    document.getElementById('position').textContent =
-        `${player.ball.position.x.toFixed(1)}, ${player.ball.position.y.toFixed(1)}, ${player.ball.position.z.toFixed(1)}`;
+        document.getElementById('position').textContent =
+            `${player.ball.position.x.toFixed(1)}, ${player.ball.position.y.toFixed(1)}, ${player.ball.position.z.toFixed(1)}`;
+    } else {
+        updateFocusCamera();
+    }
 
     renderer.render(scene, camera);
 }
@@ -233,6 +315,12 @@ function updateCamera() {
     }
 
     camera.lookAt(playerHead);
+}
+
+function updateFocusCamera() {
+    // Smoothly interpolate camera to focus position
+    camera.position.lerp(focusCameraPosition, 0.1);
+    camera.lookAt(focusCameraTarget);
 }
 
 window.addEventListener('resize', () => {
