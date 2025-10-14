@@ -50,7 +50,6 @@ const aiPlayers = createAIPlayers(scene);
 
 // --- CONTROLS ---
 const controls = isMobile ? setupMobileControls(renderer.domElement) : setupControls(renderer.domElement);
-
 if (isMobile) {
     setupMobileExperience(videoElement, billboardAudio);
 } else {
@@ -133,8 +132,6 @@ function exitBillboardFocusMode() {
     if (billboardAudio) {
         billboardAudio.setVolume(0.5);
     }
-    // Close settings if open
-    document.getElementById('settingsPanel').style.display = 'none';
 }
 
 document.getElementById('exitFocusButton').addEventListener('click', exitBillboardFocusMode);
@@ -149,8 +146,11 @@ document.getElementById('closeSettingsButton').addEventListener('click', () => {
 });
 
 document.getElementById('howToPlayButton').addEventListener('click', () => {
-    const content = document.getElementById('howToPlayContent');
-    content.style.display = content.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('howToPlayModal').style.display = 'block';
+});
+
+document.getElementById('closeHowToPlayButton').addEventListener('click', () => {
+    document.getElementById('howToPlayModal').style.display = 'none';
 });
 
 document.getElementById('cameraToggle').addEventListener('click', () => {
@@ -238,12 +238,12 @@ function animate() {
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
 
-    // ✅ FIX: Always update AI players, even in focus mode
+    // ✅ CRITICAL FIX: Update players & AI even in focus mode
+    player.update(deltaTime, controls, camera);
     updateAIPlayers(deltaTime, aiPlayers);
+    handleCollisions(player, aiPlayers);
 
     if (!isBillboardFocused) {
-        player.update(deltaTime, controls, camera);
-        handleCollisions(player, aiPlayers);
         updateCamera();
     } else {
         updateFocusCamera();
@@ -272,14 +272,17 @@ function updateCamera() {
     cameraDistance += controls.scrollDelta * 0.03;
     cameraDistance = Math.max(8, Math.min(50, cameraDistance));
     controls.scrollDelta = 0;
+
     const lerpFactor = 0.08;
     currentCameraAngle.theta += (targetCameraAngle.theta - currentCameraAngle.theta) * lerpFactor;
     currentCameraAngle.phi += (targetCameraAngle.phi - currentCameraAngle.phi) * lerpFactor;
+
     const playerHead = new THREE.Vector3(
         player.ball.position.x,
         player.ball.position.y + 2,
         player.ball.position.z
     );
+
     const idealCamOffset = new THREE.Vector3().setFromSphericalCoords(
         cameraDistance,
         currentCameraAngle.phi,
@@ -287,6 +290,7 @@ function updateCamera() {
     );
     const idealCamPos = playerHead.clone().add(idealCamOffset);
     const camDirection = new THREE.Vector3().subVectors(idealCamPos, playerHead).normalize();
+
     raycaster.set(playerHead, camDirection);
     raycaster.far = cameraDistance;
     const intersections = raycaster.intersectObjects(collidableObjects);
