@@ -19,12 +19,14 @@ document.body.appendChild(renderer.domElement);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
 const audioListener = new THREE.AudioListener();
 camera.add(audioListener);
-// Mobile detection
+
+// --- CORRECTED MOBILE DETECTION ---
 const isMobile = (() => {
-    const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    // This logic is now stricter to avoid flagging touch-screen laptops.
     const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-    return (hasTouch && mobileRegex.test(navigator.userAgent)) || (hasTouch && window.innerWidth <= 768);
+    return mobileRegex.test(navigator.userAgent);
 })();
+
 // Camera setup
 let cameraMode = 'auto';
 let targetCameraAngle = { theta: Math.PI, phi: Math.PI / 2.8 };
