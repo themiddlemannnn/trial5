@@ -4,7 +4,7 @@ import { createAIPlayers, updateAIPlayers } from './ai.js';
 import { setupControls } from './controls.js';
 import { setupMobileControls } from './mobile-controls.js';
 import { handleCollisions } from './collisions.js';
-import { setupMobileExperience } from './mobile.js';
+import { setupMobileExperience, enterMobileMode } from './mobile.js';
 
 
 // --- INITIALIZATION ---
@@ -78,7 +78,24 @@ document.getElementById('zoomOutButton').addEventListener('click', () => {
 document.getElementById('fullscreenButton').addEventListener('click', toggleFullScreen);
 
 function toggleFullScreen() {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    // If we are already in fullscreen, exit.
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        }
+        return;
+    }
+
+    // If we are NOT in fullscreen, enter it.
+    if (isMobile) {
+        // On mobile, use the dedicated async function that also locks orientation.
+        enterMobileMode().catch(err => {
+             console.error(`Error attempting to enter mobile mode: ${err.message}`);
+        });
+    } else {
+        // On desktop, use the standard method.
         const elem = document.documentElement;
         if (elem.requestFullscreen) {
             elem.requestFullscreen().catch(err => {
@@ -86,12 +103,6 @@ function toggleFullScreen() {
             });
         } else if (elem.webkitRequestFullscreen) { /* Safari */
             elem.webkitRequestFullscreen();
-        }
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) { /* Safari */
-            document.webkitExitFullscreen();
         }
     }
 }
