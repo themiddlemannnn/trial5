@@ -10,6 +10,7 @@ import { setupMobileExperience } from './mobile.js';
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a1a);
 scene.fog = new THREE.Fog(0x1a1a1a, 60, 100);
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -27,7 +28,7 @@ const isMobile = (() => {
     return (hasTouch && mobileRegex.test(navigator.userAgent)) || (hasTouch && window.innerWidth <= 768);
 })();
 
-// Camera setup
+// Camera setup – closer by default on mobile
 let cameraMode = 'auto';
 let targetCameraAngle = { theta: Math.PI, phi: Math.PI / 2.8 };
 let currentCameraAngle = { ...targetCameraAngle };
@@ -53,9 +54,11 @@ const controls = isMobile ? setupMobileControls(renderer.domElement) : setupCont
 
 if (isMobile) {
     setupMobileExperience(videoElement, billboardAudio);
+    setupBillboardTapDetection();
 } else {
     document.getElementById('mobileControls').style.display = 'none';
     document.getElementById('exitFocusButton').style.display = 'none';
+
     const startMedia = () => {
         if (videoElement.paused) videoElement.play().catch(e => console.error("Video play failed:", e));
         if (billboardAudio && !billboardAudio.isPlaying) billboardAudio.play();
@@ -64,156 +67,69 @@ if (isMobile) {
     window.addEventListener('click', startMedia);
 }
 
-// --- NEW: Can player see the billboard? ---
-function canSeeBillboard() {
-    const playerPos = player.ball.position.clone();
-    const billboardPos = billboardFrame.position.clone();
-
-    const toBillboard = new THREE.Vector3().subVectors(billboardPos, playerPos);
-    toBillboard.y = 0;
-    if (toBillboard.lengthSq() === 0) return false;
-
-    if (toBillboard.length() > 40) return false;
-
-    const cameraForward = new THREE.Vector3();
-    camera.getWorldDirection(cameraForward);
-    cameraForward.y = 0;
-    cameraForward.normalize();
-
-    const angle = cameraForward.angleTo(toBillboard.normalize());
-    if (angle > Math.PI / 2) return false;
-
-    raycaster.set(playerPos, toBillboard.clone().normalize());
-    raycaster.far = toBillboard.length();
-    const intersects = raycaster.intersectObjects(collidableObjects);
-    for (const hit of intersects) {
-        if (hit.object !== billboardFrame && hit.object !== billboardFrame.children[0]) {
-            return false;
+// --- BILLBOARD FOCUS MODE ---
+function setupBillboardTapDetection() {
+    renderer.domElement.addEventListener('touchstart', (e) => {
+        if (isBillboardFocused) return;
+        const touch = e.touches[0];
+        const mouse = new THREE.Vector2(
+            (touch.clientX / window.innerWidth) * 2 - 1,
+            -(touch.clientY / window.innerHeight) * 2 + 1
+        );
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(billboardFrame, true);
+        if (intersects.length > 0) {
+            enterBillboardFocusMode();
         }
-    }
-    return true;
+    });
 }
 
-// --- FOCUS BUTTON LISTENER ---
-document.getElementById('focusBillboardButton').addEventListener('click', () => {
-    if (!isBillboardFocused && canSeeBillboard()) {
-        enterBillboardFocusMode();
-    }
-});
-
-// --- BILLBOARD FOCUS MODE ---
 function enterBillboardFocusMode() {
     isBillboardFocused = true;
     originalCameraDistance = cameraDistance;
 
-    // Hide all UI
     document.getElementById('ui').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'none';
+    document.getElementById('mobileControls').style.display = 'none';
     document.getElementById('systemLog').style.display = 'none';
     document.getElementById('settingsIcon').style.display = 'none';
-    document.getElementById('settingsPanel').style.display = 'none';
-    document.getElementById('mobileControls').style.display = isMobile ? 'none' : 'none';
+    document.getElementById('settingsModal').style.display = 'none';
 
-    // Show exit button
     document.getElementById('exitFocusButton').style.display = 'block';
 
-    // Audio
-    if (billboardAudio) {
-        billboardAudio.setVolume(1.0);
-    }
+    if (billboardAudio) billboardAudio.setVolume(1.0);
 
-    // Camera target
     const billboardPosition = billboardFrame.position.clone();
     focusCameraTarget.copy(billboardPosition);
-    focusCameraPosition.copy(billboardPosition).add(new THREE.Vector3(0, 3, 12));
+    focusCameraPosition.set(billboardPosition.x, billboardPosition.y, billboardPosition.z + 15);
 }
 
 function exitBillboardFocusMode() {
     isBillboardFocused = false;
     cameraDistance = originalCameraDistance;
 
-    // Show all UI
     document.getElementById('ui').style.display = 'block';
     document.getElementById('chatContainer').style.display = 'flex';
+    document.getElementById('mobileControls').style.display = 'block';
     document.getElementById('systemLog').style.display = 'block';
-    document.getElementById('settingsIcon').style.display = 'flex';
-    document.getElementById('settingsPanel').style.display = 'none';
-    document.getElementById('mobileControls').style.display = isMobile ? 'block' : 'none';
-
-    // Hide exit button
+    document.getElementById('settingsIcon').style.display = 'block';
     document.getElementById('exitFocusButton').style.display = 'none';
 
-    // Reset audio
-    if (billboardAudio) {
-        billboardAudio.setVolume(0.5);
-    }
+    if (billboardAudio) billboardAudio.setVolume(0.5);
 }
 
 document.getElementById('exitFocusButton').addEventListener('click', exitBillboardFocusMode);
 
-// --- HOW TO PLAY MODAL ---
-let howToPlayModal = null;
-document.getElementById('howToPlayButton').addEventListener('click', () => {
-    if (howToPlayModal) return;
-
-    howToPlayModal = document.createElement('div');
-    Object.assign(howToPlayModal.style, {
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        background: 'rgba(0, 0, 0, 0.9)',
-        color: 'white',
-        padding: '20px',
-        borderRadius: '12px',
-        maxWidth: '400px',
-        width: '90%',
-        zIndex: '1000',
-        textAlign: 'left',
-        fontSize: '14px',
-        border: '2px solid rgba(255,255,255,0.3)'
-    });
-
-    howToPlayModal.innerHTML = `
-        <h3 style="margin-top:0; text-align:center;">How to Play</h3>
-        <div><strong>Movement:</strong> WASD or Arrow Keys</div>
-        <div><strong>Jump:</strong> Spacebar</div>
-        <div><strong>Sprint:</strong> Hold Shift</div>
-        <div><strong>Camera:</strong> Left-click + drag to rotate</div>
-        <div><strong>Zoom:</strong> Mouse wheel</div>
-        <div style="margin-top:15px; text-align:center;">
-            <button id="closeHowToPlay" style="
-                background: rgba(0,120,255,0.9);
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 6px;
-                cursor: pointer;
-            ">Close</button>
-        </div>
-    `;
-
-    document.body.appendChild(howToPlayModal);
-
-    document.getElementById('closeHowToPlay').addEventListener('click', () => {
-        document.body.removeChild(howToPlayModal);
-        howToPlayModal = null;
-    });
-
-    howToPlayModal.addEventListener('click', (e) => {
-        if (e.target === howToPlayModal) {
-            document.body.removeChild(howToPlayModal);
-            howToPlayModal = null;
-        }
-    });
-});
-
-// --- UI EVENT LISTENERS ---
+// --- SETTINGS MODAL ---
 document.getElementById('settingsIcon').addEventListener('click', () => {
-    const panel = document.getElementById('settingsPanel');
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('settingsModal').style.display = 'flex';
 });
 
+document.getElementById('closeSettings').addEventListener('click', () => {
+    document.getElementById('settingsModal').style.display = 'none';
+});
+
+// --- UI EVENT LISTENERS (inside modal) ---
 document.getElementById('cameraToggle').addEventListener('click', () => {
     cameraMode = cameraMode === 'auto' ? 'manual' : 'auto';
     document.getElementById('modeText').textContent = cameraMode === 'auto' ? 'Auto Follow' : 'Manual Control';
@@ -222,6 +138,7 @@ document.getElementById('cameraToggle').addEventListener('click', () => {
 document.getElementById('zoomInButton').addEventListener('click', () => {
     cameraDistance = Math.max(8, cameraDistance - 3);
 });
+
 document.getElementById('zoomOutButton').addEventListener('click', () => {
     cameraDistance = Math.min(50, cameraDistance + 3);
 });
@@ -238,6 +155,7 @@ document.getElementById('muteButton').addEventListener('click', () => {
 });
 
 document.getElementById('fullscreenButton').addEventListener('click', toggleFullScreen);
+
 function toggleFullScreen() {
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         const elem = document.documentElement;
@@ -264,6 +182,7 @@ document.getElementById('chatInput').addEventListener('keydown', (e) => {
         }
     }
 });
+
 document.getElementById('sendButton').addEventListener('click', () => {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
@@ -274,7 +193,7 @@ document.getElementById('sendButton').addEventListener('click', () => {
     }
 });
 
-// System Log
+// --- SYSTEM LOG ---
 const systemLog = document.getElementById('systemLog');
 const aiNames = ['Alex', 'Jordan', 'Sam', 'Riley', 'Casey', 'Morgan', 'Taylor', 'Jamie', 'Avery', 'Cameron', 'Blake', 'Skyler', 'Quinn', 'Reese', 'Dakota'];
 setTimeout(() => {
@@ -296,14 +215,15 @@ function animate() {
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
 
-    // ✅ ALWAYS update physics and AI — even in focus mode
-    player.update(deltaTime, controls, camera);
+    // Always update AI and collisions
     updateAIPlayers(deltaTime, aiPlayers);
     handleCollisions(player, aiPlayers);
 
-    // Only camera and UI depend on focus mode
     if (!isBillboardFocused) {
+        player.update(deltaTime, controls, camera);
         updateCamera();
+        document.getElementById('position').textContent =
+            `${player.ball.position.x.toFixed(1)}, ${player.ball.position.y.toFixed(1)}, ${player.ball.position.z.toFixed(1)}`;
     } else {
         updateFocusCamera();
     }
@@ -347,7 +267,6 @@ function updateCamera() {
         currentCameraAngle.theta
     );
     const idealCamPos = playerHead.clone().add(idealCamOffset);
-
     const camDirection = new THREE.Vector3().subVectors(idealCamPos, playerHead).normalize();
     raycaster.set(playerHead, camDirection);
     raycaster.far = cameraDistance;
