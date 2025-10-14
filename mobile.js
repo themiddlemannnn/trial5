@@ -9,98 +9,45 @@ function isMobileDevice() {
 }
 
 /**
- * Hides the browser UI to create a more immersive fullscreen-like experience.
- * This is a workaround for mobile devices where true fullscreen API doesn't work.
- */
-function createImmersiveMode() {
-    // Hide the address bar by scrolling
-    window.scrollTo(0, 1);
-    
-    // Force the viewport to be the right size
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.height = '100%';
-    document.documentElement.style.overflow = 'hidden';
-    
-    // Prevent pull-to-refresh and overscroll
-    document.body.style.overscrollBehavior = 'none';
-    
-    // Set viewport height using CSS custom property
-    const setViewportHeight = () => {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-    
-    setViewportHeight();
-    window.addEventListener('resize', setViewportHeight);
-    window.addEventListener('orientationchange', () => {
-        setTimeout(setViewportHeight, 100);
-    });
-}
-
-/**
  * Requests to enter fullscreen and lock the screen orientation to landscape.
- * Falls back to immersive mode if fullscreen doesn't work.
+ * This improves immersion and ensures controls are laid out correctly.
  */
 async function enterMobileMode() {
     const elem = document.documentElement;
-    let fullscreenSuccess = false;
-    
     try {
-        // Try fullscreen API (works on Android Chrome, but not iOS Safari)
+        // Request fullscreen with multiple fallbacks for better compatibility
         if (elem.requestFullscreen) {
             await elem.requestFullscreen();
-            fullscreenSuccess = true;
-        } else if (elem.webkitRequestFullscreen) {
+        } else if (elem.webkitRequestFullscreen) { /* Safari/iOS */
             await elem.webkitRequestFullscreen();
-            fullscreenSuccess = true;
-        } else if (elem.mozRequestFullScreen) {
+        } else if (elem.mozRequestFullScreen) { /* Firefox */
             await elem.mozRequestFullScreen();
-            fullscreenSuccess = true;
-        } else if (elem.msRequestFullscreen) {
+        } else if (elem.msRequestFullscreen) { /* IE11 */
             await elem.msRequestFullscreen();
-            fullscreenSuccess = true;
         }
-    } catch (err) {
-        console.warn('Fullscreen API not available:', err.message);
-        fullscreenSuccess = false;
-    }
-    
-    // If fullscreen didn't work, use immersive mode workaround
-    if (!fullscreenSuccess) {
-        createImmersiveMode();
-        
-        const log = document.getElementById('systemLog');
-        if (log) {
-            log.textContent = "Tip: Add this page to your home screen for a better fullscreen experience!";
-            setTimeout(() => {
-                log.textContent = "";
-            }, 5000);
-        }
-    }
-    
-    // Try to lock screen orientation (works better on Android)
-    if (screen.orientation && screen.orientation.lock) {
-        try {
-            await screen.orientation.lock('landscape');
-        } catch (orientErr) {
+
+        // Lock screen to landscape. This is the modern, preferred API.
+        if (screen.orientation && screen.orientation.lock) {
             try {
-                await screen.orientation.lock('landscape-primary');
-            } catch (e) {
-                console.warn('Could not lock orientation');
-                
-                // Show rotation hint if orientation lock fails
-                const log = document.getElementById('systemLog');
-                if (log && window.innerWidth < window.innerHeight) {
-                    log.textContent = "Please rotate your device to landscape for the best experience";
-                    setTimeout(() => {
-                        log.textContent = "";
-                    }, 4000);
+                await screen.orientation.lock('landscape');
+            } catch (orientErr) {
+                // Try alternative landscape mode if primary fails
+                try {
+                    await screen.orientation.lock('landscape-primary');
+                } catch (e) {
+                    console.warn('Could not lock to landscape-primary:', e.message);
                 }
             }
+        }
+    } catch (err) {
+        console.warn(`Could not lock orientation or enter fullscreen: ${err.message}`);
+        // Display a fallback message if locking fails
+        const log = document.getElementById('systemLog');
+        if (log) {
+            log.textContent = "For the best experience, please rotate your device to landscape.";
+            setTimeout(() => {
+                log.textContent = "";
+            }, 4000);
         }
     }
 }
@@ -114,9 +61,6 @@ export function setupMobileExperience() {
         return; // Exit if not on a mobile device
     }
 
-    // Apply immersive mode immediately
-    createImmersiveMode();
-
     // Display the virtual joystick and buttons
     const mobileControls = document.getElementById('mobileControls');
     if (mobileControls) mobileControls.style.display = 'block';
@@ -125,7 +69,9 @@ export function setupMobileExperience() {
     const desktopControls = document.getElementById('controls');
     if (desktopControls) desktopControls.style.display = 'none';
 
-    // Create a start button
+    // Create a start button. A user action (like a tap) is required by modern browsers
+    // to enable sensitive features like fullscreen mode and for audio to play automatically.
+    // This is a security measure to prevent websites from being too intrusive.
     const startButton = document.createElement('button');
     startButton.textContent = 'Tap to Start';
     Object.assign(startButton.style, {
@@ -158,11 +104,4 @@ export function setupMobileExperience() {
         await enterMobileMode();
         startButton.remove();
     }, { once: true });
-    
-    // Listen for orientation changes and adjust UI
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            createImmersiveMode();
-        }, 100);
-    });
 }
