@@ -2,7 +2,7 @@
  * Sets up the static scene elements like floor, walls, lighting, and billboard.
  * @param {THREE.Scene} scene The main Three.js scene object.
  * @param {THREE.AudioListener} audioListener The listener for positional audio.
- * @returns {{collidableObjects: THREE.Mesh[], videoElement: HTMLVideoElement, billboardAudio: THREE.PositionalAudio}} An object containing scene objects, the video element, and the audio source.
+ * @returns {{collidableObjects: THREE.Mesh[], videoElement: HTMLVideoElement, billboardAudio: THREE.PositionalAudio, billboardFrame: THREE.Mesh}} An object containing scene objects, the video element, the audio source, and the billboard frame.
  */
 export function setupScene(scene, audioListener) {
     const collidableObjects = [];
@@ -117,5 +117,5 @@ export function setupScene(scene, audioListener) {
     scene.add(rightPole);
     collidableObjects.push(rightPole);
 
-    return { collidableObjects, videoElement, billboardAudio };
+    return { collidableObjects, videoElement, billboardAudio, billboardFrame };
 }
