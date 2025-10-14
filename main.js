@@ -27,7 +27,7 @@ const isMobile = (() => {
     return (hasTouch && mobileRegex.test(navigator.userAgent)) || (hasTouch && window.innerWidth <= 768);
 })();
 
-// Camera setup – closer by default on mobile
+// Camera setup — closer by default on mobile
 let cameraMode = 'auto';
 let targetCameraAngle = { theta: Math.PI, phi: Math.PI / 2.8 };
 let currentCameraAngle = { ...targetCameraAngle };
@@ -74,60 +74,25 @@ document.getElementById('zoomOutButton').addEventListener('click', () => {
     cameraDistance = Math.min(50, cameraDistance + 3);
 });
 
-// Fullscreen toggle - IMPROVED FOR MOBILE
+// Fullscreen toggle
 document.getElementById('fullscreenButton').addEventListener('click', toggleFullScreen);
 
 function toggleFullScreen() {
-    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-    
-    if (!isFullscreen) {
-        // Entering fullscreen
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         const elem = document.documentElement;
-        
-        // Try multiple methods for better browser compatibility
         if (elem.requestFullscreen) {
             elem.requestFullscreen().catch(err => {
-                console.error(`Fullscreen error: ${err.message}`);
-                showFullscreenError();
+                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
             });
-        } else if (elem.webkitRequestFullscreen) { /* Safari/iOS */
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
             elem.webkitRequestFullscreen();
-        } else if (elem.mozRequestFullScreen) { /* Firefox */
-            elem.mozRequestFullScreen();
-        } else if (elem.msRequestFullscreen) { /* IE11 */
-            elem.msRequestFullscreen();
-        } else {
-            // Fullscreen API not supported
-            showFullscreenError();
-        }
-        
-        // For mobile devices, also try to lock orientation
-        if (isMobile && screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(err => {
-                console.warn('Could not lock orientation:', err.message);
-            });
         }
     } else {
-        // Exiting fullscreen
         if (document.exitFullscreen) {
             document.exitFullscreen();
         } else if (document.webkitExitFullscreen) { /* Safari */
             document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) { /* Firefox */
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) { /* IE11 */
-            document.msExitFullscreen();
         }
-    }
-}
-
-function showFullscreenError() {
-    const log = document.getElementById('systemLog');
-    if (log) {
-        log.textContent = "Fullscreen not supported on this device/browser";
-        setTimeout(() => {
-            log.textContent = "";
-        }, 3000);
     }
 }
 
