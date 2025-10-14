@@ -17,34 +17,47 @@
     <div id="systemLog"></div>
     <div id="settingsIcon">⚙️</div>
 
-    <!-- Full-screen settings panel -->
     <div id="settingsPanel">
-        <h2>Settings</h2>
-        <div><strong>Camera Mode:</strong> <span id="modeText">Auto Follow</span></div>
-        <button id="cameraToggle">Toggle Camera</button>
-        <div style="margin-top: 15px;"><strong>Zoom:</strong></div>
-        <button id="zoomInButton">Zoom In</button>
-        <button id="zoomOutButton">Zoom Out</button>
-        <div style="margin-top: 15px;"><strong>Audio:</strong></div>
-        <button id="muteButton">Mute Audio</button>
-        <div style="margin-top: 15px;"><strong>Display:</strong></div>
-        <button id="fullscreenButton">Toggle Fullscreen</button>
-        <button id="howToPlayButton">How to Play</button>
-        <button id="closeSettingsButton">Close</button>
+        <button id="closeSettingsButton">✕</button>
+        <div id="mainSettingsContent" class="settings-content">
+            <h2>Settings</h2>
+            <div class="settings-group">
+                <label>Camera Mode: <span id="modeText">Auto Follow</span></label>
+                <button id="cameraToggle">Toggle Camera</button>
+            </div>
+            <div class="settings-group">
+                <label>Zoom</label>
+                <div class="button-row">
+                    <button id="zoomInButton">Zoom In</button>
+                    <button id="zoomOutButton">Zoom Out</button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <label>Audio</label>
+                <button id="muteButton">Mute Audio</button>
+            </div>
+            <div class="settings-group">
+                <label>Display</label>
+                <button id="fullscreenButton">Toggle Fullscreen</button>
+            </div>
+            <div class="settings-group">
+                <button id="howToPlayButton">How to Play</button>
+            </div>
+        </div>
+
+        <div id="howToPlayPanel" class="settings-content">
+            <button id="backToSettingsButton">← Back</button>
+            <h2>How To Play (Desktop)</h2>
+            <div class="control-list">
+                <div class="control-item"><strong>Movement:</strong> WASD or Arrow Keys</div>
+                <div class="control-item"><strong>Jump:</strong> Spacebar</div>
+                <div class="control-item"><strong>Speed:</strong> Hold Shift</div>
+                <div class="control-item"><strong>Camera:</strong> Left-click + Drag to rotate</div>
+                <div class="control-item"><strong>Zoom:</strong> Mouse Wheel</div>
+            </div>
+        </div>
     </div>
 
-    <!-- How to Play Modal -->
-    <div id="howToPlayModal">
-        <h2>How to Play</h2>
-        <div class="control-item"><strong>Movement:</strong> WASD or Arrow Keys</div>
-        <div class="control-item"><strong>Jump:</strong> Spacebar</div>
-        <div class="control-item"><strong>Speed:</strong> Hold Shift</div>
-        <div class="control-item"><strong>Camera:</strong> Left-click + Drag to rotate</div>
-        <div class="control-item"><strong>Zoom:</strong> Mouse Wheel</div>
-        <button id="closeHowToPlayButton">Close</button>
-    </div>
-
-    <!-- Hidden by default; shown only when needed -->
     <div id="chatContainer">
         <input type="text" id="chatInput" placeholder="Type a message..." maxlength="50">
         <button id="sendButton">Send</button>
