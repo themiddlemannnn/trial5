@@ -27,7 +27,7 @@
 
 body {
     margin: 0;
-    overflow: hidden;
+    overflow: hidden; [cite_start]/* [cite: 5] */
     font-family: Arial, sans-serif;
     touch-action: none;
 }
@@ -43,17 +43,34 @@ canvas {
     color: white;
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
-    border-radius: 8px;
+    border-radius: 8px; [cite_start]/* [cite: 7] */
     font-size: 12px;
     z-index: 100;
 }
+
+#focusBillboardButton {
+    width: 100%;
+    padding: 6px;
+    margin-top: 8px;
+    background: rgba(0, 120, 255, 0.9); [cite_start]/* [cite: 14] */
+    color: white; [cite_start]/* [cite: 14] */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px; [cite_start]/* [cite: 15] */
+}
+
+#focusBillboardButton:hover {
+    background: rgba(0, 100, 220, 0.9); [cite_start]/* [cite: 16] */
+}
+
 
 #controls {
     position: absolute;
     bottom: 10px;
     left: 10px;
     color: white;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.7); [cite_start]/* [cite: 8] */
     padding: 10px;
     border-radius: 8px;
     font-size: 11px;
@@ -68,15 +85,15 @@ canvas {
     position: absolute;
     top: 60px;
     right: 20px;
-    width: 40px;
-    height: 40px;
+    width: 40px; [cite_start]/* [cite: 10] */
+    height: 40px; [cite_start]/* [cite: 10] */
     background: rgba(50, 50, 50, 0.8);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 20px;
+    font-size: 20px; [cite_start]/* [cite: 11] */
     cursor: pointer;
     z-index: 100;
     user-select: none;
@@ -86,7 +103,7 @@ canvas {
     position: absolute;
     top: 110px;
     right: 20px;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.85); [cite_start]/* [cite: 12] */
     color: white;
     padding: 12px;
     border-radius: 8px;
@@ -94,23 +111,23 @@ canvas {
     z-index: 100;
     display: none;
     min-width: 160px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5); [cite_start]/* [cite: 13] */
 }
 
 #settingsPanel button {
     width: 100%;
     padding: 6px;
     margin-top: 6px;
-    background: rgba(0, 120, 255, 0.9);
-    color: white;
+    background: rgba(0, 120, 255, 0.9); [cite_start]/* [cite: 14] */
+    color: white; [cite_start]/* [cite: 14] */
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 12px; [cite_start]/* [cite: 15] */
 }
 
 #settingsPanel button:hover {
-    background: rgba(0, 100, 220, 0.9);
+    background: rgba(0, 100, 220, 0.9); [cite_start]/* [cite: 16] */
 }
 
 /* Chat UI */
@@ -121,7 +138,7 @@ canvas {
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 8px; [cite_start]/* [cite: 17] */
     width: 80%;
     max-width: 500px;
     z-index: 100;
@@ -131,7 +148,7 @@ canvas {
     width: 100%;
     padding: 8px 12px;
     font-size: 14px;
-    border-radius: 20px;
+    border-radius: 20px; [cite_start]/* [cite: 18] */
     border: 2px solid rgba(255, 255, 255, 0.5);
     background: rgba(0, 0, 0, 0.7);
     color: white;
@@ -144,7 +161,7 @@ canvas {
 
 #sendButton {
     background: rgba(0, 120, 255, 0.9);
-    color: white;
+    color: white; [cite_start]/* [cite: 20] */
     border: none;
     border-radius: 20px;
     padding: 6px 12px;
@@ -160,7 +177,7 @@ canvas {
 #systemLog {
     position: absolute;
     top: 10px;
-    right: 10px;
+    right: 10px; [cite_start]/* [cite: 22] */
     color: #aaffaa;
     background: rgba(0, 0, 0, 0.7);
     padding: 8px;
@@ -168,7 +185,7 @@ canvas {
     font-size: 12px;
     max-width: 300px;
     z-index: 100;
-    text-align: right;
+    text-align: right; [cite_start]/* [cite: 23] */
 }
 
 /* Mobile Controls */
@@ -178,7 +195,7 @@ canvas {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 50;
+    z-index: 50; [cite_start]/* [cite: 24] */
 }
 
 #joystickArea {
@@ -195,7 +212,7 @@ canvas {
     width: 100%;
     height: 100%;
     background: rgba(255, 255, 255, 0.2);
-    border: 3px solid rgba(255, 255, 255, 0.4);
+    border: 3px solid rgba(255, 255, 255, 0.4); [cite_start]/* [cite: 26] */
     border-radius: 50%;
 }
 
@@ -203,12 +220,12 @@ canvas {
     position: absolute;
     width: 60px;
     height: 60px;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.6); [cite_start]/* [cite: 27] */
     border: 3px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); [cite_start]/* [cite: 28] */
     transition: all 0.1s;
 }
 
@@ -217,13 +234,13 @@ canvas {
     right: 30px;
     bottom: 120px;
     width: 80px;
-    height: 80px;
+    height: 80px; [cite_start]/* [cite: 29] */
     background: rgba(255, 100, 100, 0.7);
     border: 3px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: center; [cite_start]/* [cite: 30] */
     color: white;
     font-weight: bold;
     font-size: 16px;
@@ -238,13 +255,13 @@ canvas {
 
 #sprintButton {
     position: absolute;
-    right: 30px;
+    right: 30px; [cite_start]/* [cite: 32] */
     bottom: 30px;
     width: 80px;
     height: 80px;
     background: rgba(100, 200, 255, 0.7);
     border: 3px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
+    border-radius: 50%; [cite_start]/* [cite: 33] */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -257,7 +274,7 @@ canvas {
 
 #sprintButton:active {
     background: rgba(50, 150, 255, 0.9);
-    transform: scale(0.95);
+    transform: scale(0.95); [cite_start]/* [cite: 35] */
 }
 
 /* Exit Focus Button */
@@ -267,13 +284,13 @@ canvas {
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 30px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.2); [cite_start]/* [cite: 36] */
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 25px;
     font-size: 16px;
     font-weight: bold;
-    cursor: pointer;
+    cursor: pointer; [cite_start]/* [cite: 37] */
     pointer-events: all;
     user-select: none;
     display: none;
@@ -283,14 +300,14 @@ canvas {
 
 #exitFocusButton:active {
     background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-50%) scale(0.95);
+    transform: translateX(-50%) scale(0.95); [cite_start]/* [cite: 39] */
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     #ui {
         font-size: 10px;
-        padding: 8px;
+        padding: 8px; [cite_start]/* [cite: 40] */
     }
     #controls {
         display: none;
@@ -298,6 +315,6 @@ canvas {
     #chatInput {
         width: 100%;
         font-size: 13px;
-        padding: 6px 10px;
+        padding: 6px 10px; [cite_start]/* [cite: 42] */
     }
 }
