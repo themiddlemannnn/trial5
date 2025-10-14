@@ -32,6 +32,60 @@ body {
 canvas {
     display: block;
 }
+
+/* --- NEW: Device Selection Modal Styles --- */
+#deviceSelectionModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10001; /* Highest z-index */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+}
+.modal-content {
+    background: rgba(20, 20, 20, 0.8);
+    padding: 30px 40px;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+.modal-content h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+.modal-content p {
+    font-size: 16px;
+    margin-bottom: 25px;
+    color: #ccc;
+    max-width: 400px;
+}
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    flex-direction: column;
+}
+.modal-buttons button {
+    padding: 15px 25px;
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.2s, transform 0.2s;
+}
+.modal-buttons button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+
 #ui {
     position: absolute;
     top: 10px;
@@ -58,8 +112,6 @@ canvas {
     background: rgba(0, 100, 220, 0.9);
 }
 
-/* Controls div is removed from main UI */
-
 #settingsIcon {
     position: absolute;
     top: 10px;
@@ -74,11 +126,11 @@ canvas {
     color: white;
     font-size: 20px;
     cursor: pointer;
-    z-index: 101; /* Above other UI */
+    z-index: 101;
     user-select: none;
 }
 
-/* NEW: Fullscreen Settings Panel Style */
+/* --- UPDATED: Scrollable Settings Panel --- */
 #settingsPanel {
     position: fixed;
     top: 0;
@@ -87,10 +139,11 @@ canvas {
     height: 100%;
     background: rgba(0, 0, 0, 0.95);
     z-index: 200;
-    display: none; /* Hidden by default */
-    align-items: center;
+    display: none;
     justify-content: center;
     color: white;
+    overflow-y: auto; /* Allow vertical scrolling */
+    padding: 80px 20px 40px 20px; /* Add padding for close button and space at bottom */
 }
 
 .settings-content {
@@ -100,10 +153,11 @@ canvas {
     gap: 20px;
     width: 90%;
     max-width: 400px;
+    flex-shrink: 0; /* Prevent content from shrinking */
 }
 
 #howToPlayPanel {
-    display: none; /* Hidden by default */
+    display: none;
 }
 
 .settings-group {
@@ -116,12 +170,10 @@ canvas {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
 }
-
 .settings-group label {
     font-size: 16px;
     font-weight: bold;
 }
-
 #settingsPanel button {
     width: 100%;
     padding: 12px 20px;
@@ -133,17 +185,14 @@ canvas {
     cursor: pointer;
     transition: background-color 0.2s;
 }
-
 #settingsPanel .button-row {
     display: flex;
     width: 100%;
     gap: 10px;
 }
-
 #settingsPanel button:hover {
     background: #0056b3;
 }
-
 #closeSettingsButton, #backToSettingsButton {
     position: absolute;
     top: 20px;
@@ -157,14 +206,12 @@ canvas {
     left: 20px;
     right: auto;
 }
-
 #howToPlayPanel h2, #mainSettingsContent h2 {
     font-size: 28px;
     margin-bottom: 10px;
     border-bottom: 2px solid #007bff;
     padding-bottom: 5px;
 }
-
 .control-list {
     background: rgba(255, 255, 255, 0.05);
     padding: 20px;
@@ -351,5 +398,8 @@ canvas {
         width: 100%;
         font-size: 13px;
         padding: 6px 10px;
+    }
+    .modal-buttons {
+        flex-direction: column;
     }
 }
