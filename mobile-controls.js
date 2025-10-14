@@ -1,12 +1,9 @@
 /**
  * Sets up all user touch input handlers for mobile devices.
  * @param {HTMLElement} domElement The canvas element to attach listeners to.
- * @param {THREE.Camera} camera The main scene camera for raycasting.
- * @param {Array<THREE.Object3D>} tapTargets An array of objects to check for taps.
- * @param {Function} onTapTargetCallback The function to call when a target is tapped.
  * @returns {Object} A controls state object for mobile gameplay.
  */
-export function setupMobileControls(domElement, camera, tapTargets, onTapTargetCallback) {
+export function setupMobileControls(domElement) {
     const controls = {
         keys: {},
         isDragging: false,
@@ -25,7 +22,6 @@ export function setupMobileControls(domElement, camera, tapTargets, onTapTargetC
     const joystickStick = document.getElementById('joystickStick');
     const jumpButton = document.getElementById('jumpButton');
     const sprintButton = document.getElementById('sprintButton');
-    const raycaster = new THREE.Raycaster();
 
     // --- State Variables ---
     let joystickTouchId = null;
@@ -61,34 +57,17 @@ export function setupMobileControls(domElement, camera, tapTargets, onTapTargetC
         }
     }, { passive: false });
 
-    // --- Camera and Billboard Tap Logic (Unified Handler) ---
+    // --- Camera Touch Rotation (Multitouch-aware) ---
     domElement.addEventListener('touchstart', (e) => {
-        // Ignore taps that aren't directly on the canvas (e.g., on UI buttons)
         if (e.target !== domElement) return;
-        
-        const touch = e.changedTouches[0];
-
-        // 1. Check for Billboard Tap first
-        const mouse = new THREE.Vector2(
-            (touch.clientX / window.innerWidth) * 2 - 1,
-            -(touch.clientY / window.innerHeight) * 2 + 1
-        );
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(tapTargets, true);
-
-        if (intersects.length > 0) {
-            onTapTargetCallback(); // Trigger the focus mode
-            return; // Stop processing to prevent camera rotation
-        }
-
-        // 2. If no billboard was tapped, proceed with camera rotation
         e.preventDefault();
+
         // Assign a second touch for camera if not already assigned
-        for (const t of e.changedTouches) {
-            if (joystickTouchId === null || t.identifier !== joystickTouchId) {
+        for (const touch of e.changedTouches) {
+            if (joystickTouchId === null || touch.identifier !== joystickTouchId) {
                 if (cameraTouchId === null) {
-                    cameraTouchId = t.identifier;
-                    cameraTouchStart = { x: t.clientX, y: t.clientY };
+                    cameraTouchId = touch.identifier;
+                    cameraTouchStart = { x: touch.clientX, y: touch.clientY };
                     controls.isTouchRotating = true;
                     break;
                 }
