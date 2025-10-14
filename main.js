@@ -28,7 +28,7 @@ const isMobile = (() => {
     return (hasTouch && mobileRegex.test(navigator.userAgent)) || (hasTouch && window.innerWidth <= 768);
 })();
 
-// Camera setup – closer by default on mobile
+// Camera setup
 let cameraMode = 'auto';
 let targetCameraAngle = { theta: Math.PI, phi: Math.PI / 2.8 };
 let currentCameraAngle = { ...targetCameraAngle };
@@ -54,11 +54,9 @@ const controls = isMobile ? setupMobileControls(renderer.domElement) : setupCont
 
 if (isMobile) {
     setupMobileExperience(videoElement, billboardAudio);
-    setupBillboardTapDetection();
 } else {
     document.getElementById('mobileControls').style.display = 'none';
     document.getElementById('exitFocusButton').style.display = 'none';
-
     const startMedia = () => {
         if (videoElement.paused) videoElement.play().catch(e => console.error("Video play failed:", e));
         if (billboardAudio && !billboardAudio.isPlaying) billboardAudio.play();
@@ -67,69 +65,97 @@ if (isMobile) {
     window.addEventListener('click', startMedia);
 }
 
-// --- BILLBOARD FOCUS MODE ---
-function setupBillboardTapDetection() {
-    renderer.domElement.addEventListener('touchstart', (e) => {
-        if (isBillboardFocused) return;
-        const touch = e.touches[0];
-        const mouse = new THREE.Vector2(
-            (touch.clientX / window.innerWidth) * 2 - 1,
-            -(touch.clientY / window.innerHeight) * 2 + 1
-        );
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObject(billboardFrame, true);
-        if (intersects.length > 0) {
-            enterBillboardFocusMode();
+// --- NEW: Can player see the billboard? ---
+function canSeeBillboard() {
+    const playerPos = player.ball.position.clone();
+    const billboardPos = billboardFrame.position.clone();
+    const toBillboard = new THREE.Vector3().subVectors(billboardPos, playerPos);
+    toBillboard.y = 0;
+    if (toBillboard.lengthSq() === 0) return false;
+    if (toBillboard.length() > 40) return false;
+
+    const cameraForward = new THREE.Vector3();
+    camera.getWorldDirection(cameraForward);
+    cameraForward.y = 0;
+    cameraForward.normalize();
+
+    const angle = cameraForward.angleTo(toBillboard.normalize());
+    if (angle > Math.PI / 2) return false;
+
+    raycaster.set(playerPos, toBillboard.clone().normalize());
+    raycaster.far = toBillboard.length();
+    const intersects = raycaster.intersectObjects(collidableObjects);
+    for (const hit of intersects) {
+        if (hit.object !== billboardFrame && hit.object !== billboardFrame.children[0]) {
+            return false;
         }
-    });
+    }
+    return true;
 }
 
+// --- NEW: Focus Button Listener ---
+document.getElementById('focusBillboardButton').addEventListener('click', () => {
+    if (!isBillboardFocused && canSeeBillboard()) {
+        enterBillboardFocusMode();
+    }
+});
+
+// --- BILLBOARD FOCUS MODE ---
 function enterBillboardFocusMode() {
     isBillboardFocused = true;
     originalCameraDistance = cameraDistance;
 
+    // Hide all UI
     document.getElementById('ui').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'none';
-    document.getElementById('mobileControls').style.display = 'none';
     document.getElementById('systemLog').style.display = 'none';
     document.getElementById('settingsIcon').style.display = 'none';
-    document.getElementById('settingsModal').style.display = 'none';
+    document.getElementById('settingsPanel').style.display = 'none';
+    document.getElementById('mobileControls').style.display = 'none';
 
+    // Show exit button
     document.getElementById('exitFocusButton').style.display = 'block';
 
-    if (billboardAudio) billboardAudio.setVolume(1.0);
+    // Audio
+    if (billboardAudio) {
+        billboardAudio.setVolume(1.0);
+    }
 
+    // Camera target
     const billboardPosition = billboardFrame.position.clone();
     focusCameraTarget.copy(billboardPosition);
-    focusCameraPosition.set(billboardPosition.x, billboardPosition.y, billboardPosition.z + 15);
+    focusCameraPosition.copy(billboardPosition).add(new THREE.Vector3(0, 3, 12));
 }
 
 function exitBillboardFocusMode() {
     isBillboardFocused = false;
     cameraDistance = originalCameraDistance;
 
+    // Show all UI
     document.getElementById('ui').style.display = 'block';
     document.getElementById('chatContainer').style.display = 'flex';
-    document.getElementById('mobileControls').style.display = 'block';
     document.getElementById('systemLog').style.display = 'block';
     document.getElementById('settingsIcon').style.display = 'block';
+    document.getElementById('settingsPanel').style.display = 'none';
+    document.getElementById('mobileControls').style.display = isMobile ? 'block' : 'none';
+
+    // Hide exit button
     document.getElementById('exitFocusButton').style.display = 'none';
 
-    if (billboardAudio) billboardAudio.setVolume(0.5);
+    // Reset audio
+    if (billboardAudio) {
+        billboardAudio.setVolume(0.5);
+    }
 }
 
 document.getElementById('exitFocusButton').addEventListener('click', exitBillboardFocusMode);
 
-// --- SETTINGS MODAL ---
+// --- UI EVENT LISTENERS ---
 document.getElementById('settingsIcon').addEventListener('click', () => {
-    document.getElementById('settingsModal').style.display = 'flex';
+    const panel = document.getElementById('settingsPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 });
 
-document.getElementById('closeSettings').addEventListener('click', () => {
-    document.getElementById('settingsModal').style.display = 'none';
-});
-
-// --- UI EVENT LISTENERS (inside modal) ---
 document.getElementById('cameraToggle').addEventListener('click', () => {
     cameraMode = cameraMode === 'auto' ? 'manual' : 'auto';
     document.getElementById('modeText').textContent = cameraMode === 'auto' ? 'Auto Follow' : 'Manual Control';
@@ -170,6 +196,22 @@ function toggleFullScreen() {
     }
 }
 
+// How to Play Modal
+document.getElementById('howToPlayButton').addEventListener('click', () => {
+    document.getElementById('howToPlayModal').style.display = 'flex';
+    document.getElementById('settingsPanel').style.display = 'none';
+});
+
+document.getElementById('closeHowToPlay').addEventListener('click', () => {
+    document.getElementById('howToPlayModal').style.display = 'none';
+});
+
+document.getElementById('howToPlayModal').addEventListener('click', (e) => {
+    if (e.target.id === 'howToPlayModal') {
+        e.target.style.display = 'none';
+    }
+});
+
 // Chat
 document.getElementById('chatInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -193,7 +235,7 @@ document.getElementById('sendButton').addEventListener('click', () => {
     }
 });
 
-// --- SYSTEM LOG ---
+// System Log
 const systemLog = document.getElementById('systemLog');
 const aiNames = ['Alex', 'Jordan', 'Sam', 'Riley', 'Casey', 'Morgan', 'Taylor', 'Jamie', 'Avery', 'Cameron', 'Blake', 'Skyler', 'Quinn', 'Reese', 'Dakota'];
 setTimeout(() => {
@@ -215,15 +257,13 @@ function animate() {
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
 
-    // Always update AI and collisions
+    // ✅ FIX: Update player and AI even during focus
+    player.update(deltaTime, controls, camera);
     updateAIPlayers(deltaTime, aiPlayers);
     handleCollisions(player, aiPlayers);
 
     if (!isBillboardFocused) {
-        player.update(deltaTime, controls, camera);
         updateCamera();
-        document.getElementById('position').textContent =
-            `${player.ball.position.x.toFixed(1)}, ${player.ball.position.y.toFixed(1)}, ${player.ball.position.z.toFixed(1)}`;
     } else {
         updateFocusCamera();
     }
@@ -248,6 +288,7 @@ function updateCamera() {
         if (controls.keys['d'] || controls.keys['arrowright']) targetCameraAngle.theta -= rotationSpeed;
     }
     targetCameraAngle.phi = Math.max(0.2, Math.min(Math.PI / 2 - 0.1, targetCameraAngle.phi));
+
     cameraDistance += controls.scrollDelta * 0.03;
     cameraDistance = Math.max(8, Math.min(50, cameraDistance));
     controls.scrollDelta = 0;
@@ -261,12 +302,14 @@ function updateCamera() {
         player.ball.position.y + 2,
         player.ball.position.z
     );
+
     const idealCamOffset = new THREE.Vector3().setFromSphericalCoords(
         cameraDistance,
         currentCameraAngle.phi,
         currentCameraAngle.theta
     );
     const idealCamPos = playerHead.clone().add(idealCamOffset);
+
     const camDirection = new THREE.Vector3().subVectors(idealCamPos, playerHead).normalize();
     raycaster.set(playerHead, camDirection);
     raycaster.far = cameraDistance;
