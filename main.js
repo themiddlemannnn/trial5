@@ -59,8 +59,7 @@ if (isMobile) {
     window.addEventListener('click', startMedia);
 }
 
-// --- NEW: Can player see the billboard?
----
+// --- Can player see the billboard? ---
 function canSeeBillboard() {
     const playerPos = player.ball.position.clone();
     const billboardPos = billboardFrame.position.clone();
@@ -90,7 +89,7 @@ function canSeeBillboard() {
     return true;
 }
 
-// --- NEW: Focus Button Listener ---
+// --- Focus Button Listener ---
 document.getElementById('focusBillboardButton').addEventListener('click', () => {
     if (!isBillboardFocused && canSeeBillboard()) {
         enterBillboardFocusMode();
