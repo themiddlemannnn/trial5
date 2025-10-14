@@ -54,7 +54,8 @@ const aiPlayers = createAIPlayers(scene);
 const controls = isMobile ? setupMobileControls(renderer.domElement) : setupControls(renderer.domElement);
 
 if (isMobile) {
-    setupMobileExperience(videoElement, billboardAudio); // Initialize mobile-specific features
+    setupMobileExperience(videoElement, billboardAudio);
+    // Initialize mobile-specific features
     setupBillboardTapDetection(); // Add billboard tap detection for mobile
 } else {
     document.getElementById('mobileControls').style.display = 'none';
@@ -96,7 +97,6 @@ function setupBillboardTapDetection() {
 function enterBillboardFocusMode() {
     isBillboardFocused = true;
     originalCameraDistance = cameraDistance;
-    
     // Hide all UI elements
     document.getElementById('ui').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'none';
@@ -107,7 +107,6 @@ function enterBillboardFocusMode() {
     
     // Show exit button
     document.getElementById('exitFocusButton').style.display = 'block';
-    
     // Increase audio volume
     if (billboardAudio) {
         billboardAudio.setVolume(1.0);
@@ -122,7 +121,6 @@ function enterBillboardFocusMode() {
 function exitBillboardFocusMode() {
     isBillboardFocused = false;
     cameraDistance = originalCameraDistance;
-    
     // Show all UI elements
     document.getElementById('ui').style.display = 'block';
     document.getElementById('chatContainer').style.display = 'flex';
@@ -132,7 +130,6 @@ function exitBillboardFocusMode() {
     
     // Hide exit button
     document.getElementById('exitFocusButton').style.display = 'none';
-    
     // Reset audio volume
     if (billboardAudio) {
         billboardAudio.setVolume(0.5);
@@ -150,13 +147,11 @@ document.getElementById('settingsIcon').addEventListener('click', () => {
     const panel = document.getElementById('settingsPanel');
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 });
-
 // Camera mode toggle
 document.getElementById('cameraToggle').addEventListener('click', () => {
     cameraMode = cameraMode === 'auto' ? 'manual' : 'auto';
     document.getElementById('modeText').textContent = cameraMode === 'auto' ? 'Auto Follow' : 'Manual Control';
 });
-
 // Zoom buttons
 document.getElementById('zoomInButton').addEventListener('click', () => {
     cameraDistance = Math.max(8, cameraDistance - 3);
@@ -164,7 +159,6 @@ document.getElementById('zoomInButton').addEventListener('click', () => {
 document.getElementById('zoomOutButton').addEventListener('click', () => {
     cameraDistance = Math.min(50, cameraDistance + 3);
 });
-
 // Mute button
 document.getElementById('muteButton').addEventListener('click', () => {
     const button = document.getElementById('muteButton');
@@ -176,7 +170,6 @@ document.getElementById('muteButton').addEventListener('click', () => {
         button.textContent = 'Mute Audio';
     }
 });
-
 // Fullscreen toggle
 document.getElementById('fullscreenButton').addEventListener('click', toggleFullScreen);
 
@@ -210,7 +203,7 @@ document.getElementById('chatInput').addEventListener('keydown', (e) => {
             input.value = '';
             input.blur();
         }
-    }
+     }
 });
 
 // Chat Send button
@@ -223,7 +216,6 @@ document.getElementById('sendButton').addEventListener('click', () => {
         input.blur();
     }
 });
-
 // --- SYSTEM LOG ---
 const systemLog = document.getElementById('systemLog');
 const aiNames = ['Alex', 'Jordan', 'Sam', 'Riley', 'Casey', 'Morgan', 'Taylor', 'Jamie', 'Avery', 'Cameron', 'Blake', 'Skyler', 'Quinn', 'Reese', 'Dakota'];
@@ -237,7 +229,6 @@ setTimeout(() => {
         });
     }, 1000);
 }, 500);
-
 // --- MAIN LOOP ---
 let lastTime = performance.now();
 function animate() {
@@ -245,13 +236,11 @@ function animate() {
     const currentTime = performance.now();
     const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1);
     lastTime = currentTime;
-
     if (!isBillboardFocused) {
         player.update(deltaTime, controls, camera);
         updateAIPlayers(deltaTime, aiPlayers);
         handleCollisions(player, aiPlayers);
         updateCamera();
-
         document.getElementById('position').textContent =
             `${player.ball.position.x.toFixed(1)}, ${player.ball.position.y.toFixed(1)}, ${player.ball.position.z.toFixed(1)}`;
     } else {
@@ -294,7 +283,6 @@ function updateCamera() {
         player.ball.position.y + 2,
         player.ball.position.z
     );
-
     const idealCamOffset = new THREE.Vector3().setFromSphericalCoords(
         cameraDistance,
         currentCameraAngle.phi,
@@ -306,7 +294,6 @@ function updateCamera() {
     raycaster.set(playerHead, camDirection);
     raycaster.far = cameraDistance;
     const intersections = raycaster.intersectObjects(collidableObjects);
-
     if (intersections.length > 0) {
         camera.position.copy(intersections[0].point);
         camera.position.add(intersections[0].face.normal.multiplyScalar(0.5));
